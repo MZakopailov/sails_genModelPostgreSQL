@@ -12,13 +12,16 @@ var pg = require('pg');
 var argv = require('minimist')(process.argv.slice(2));
 var helper = require('./helper');
 var fs = require('fs');
+var async = require('async');
 
-var dirModel = './models';
+
+helper.checkArgInput(argv);
+
+var dirModel = argv.DIR+'/models';
 if (!fs.existsSync(dirModel)){
     fs.mkdirSync(dirModel);
 }
 
-helper.checkArgInput(argv);
 var conString = "postgres://"+argv.USERNAME+":"+argv.PASSWORD+"@"+argv.HOST+"/"+argv.DBNAME;
 
 pg.connect(conString, function(err, client, done) {
@@ -31,14 +34,16 @@ pg.connect(conString, function(err, client, done) {
 			console.log("Error pg client:" + err);
 			process.exit(1);
 		}
-		for (var i in result.rows){
-			compliteMode(client, result.rows[i].table_name, argv.SCHEMA);
-		}
+		async.eachSeries(result.rows, function iterator(item, callback) {
+				compliteMode(client, item.table_name, argv.SCHEMA, callback);
+			}, function done() {
+			  process.exit(1);
+			});
 	});
 });
 
 //Get row name in table
-function compliteMode(pgClient, tablename, shema){
+function compliteMode(pgClient, tablename, shema, callback){
 	var resultJson = {
 		autoCreatedAt: false,
 		autoUpdatedAt: false,
@@ -64,6 +69,7 @@ function compliteMode(pgClient, tablename, shema){
 						process.exit(1);
 					}
 					console.log(tablename + " Compited!");
+					callback();
 				});
 			});
 		});

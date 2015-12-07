@@ -17,6 +17,9 @@ module.exports = {
       case 'character varying':
           return 'STRING';
           break;
+      case 'bigint':
+        return 'INTEGER';
+        break;
       default:
         return type;
         break;
@@ -42,6 +45,10 @@ module.exports = {
     }
     if (argv.SCHEMA == undefined){
     	console.log("ERROR: --SCHEMA=<chema name>")
+    	process.exit(1);
+    }
+    if (argv.DIR == undefined){
+    	console.log("ERROR: --DIR=<directory models>")
     	process.exit(1);
     }
   },

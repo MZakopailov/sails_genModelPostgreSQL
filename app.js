@@ -1,6 +1,6 @@
 //
 //  app.js
-//  GetMeModelBro
+//
 //
 //  Created by MAXIM ZAKOPAYLOV on 04.12.15.
 //  Copyright (c) 2015 Maxim Zakopaylov and Aleksey Rogov.
@@ -14,10 +14,9 @@ var helper = require('./helper');
 var fs = require('fs');
 var async = require('async');
 
-
 helper.checkArgInput(argv);
 
-var dirModel = argv.DIR+'/models';
+var dirModel = argv.DIR;
 if (!fs.existsSync(dirModel)){
     fs.mkdirSync(dirModel);
 }
@@ -48,7 +47,7 @@ function compliteMode(pgClient, tablename, shema, callback){
 		autoCreatedAt: false,
 		autoUpdatedAt: false,
 		tableName: ""+tablename+"",
-		connection: 'someMysqlServer',
+		connection: 'somePostgresqlServer',
 		migrate: 'safe',
 		attributes: {}
 	};
@@ -78,8 +77,10 @@ function compliteMode(pgClient, tablename, shema, callback){
 
 function complitePrimaryKey(pgClient, tableName, attributes, callback){
 	pgClient.query("SELECT a.attname, format_type(a.atttypid, a.atttypmod) AS data_type FROM pg_index i JOIN pg_attribute a ON a.attrelid = i.indrelid AND a.attnum = ANY(i.indkey) WHERE i.indrelid = '"+tableName+"'::regclass AND i.indisprimary", function(err, result) {
-		for (var i in result.rows){
-			attributes[result.rows[i].attname].primaryKey = true
+		if (result){
+			for (var i in result.rows){
+				attributes[result.rows[i].attname].primaryKey = true
+			}
 		}
 		callback(attributes);
 	});

@@ -20,6 +20,9 @@ module.exports = {
       case 'bigint':
         return 'INTEGER';
         break;
+      case 'timestamp without time zone':
+        return 'STRING';
+        break;
       default:
         return type;
         break;
